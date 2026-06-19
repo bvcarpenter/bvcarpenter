@@ -4,8 +4,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Carousel from '../../components/Carousel.astro';
 
 export async function getStaticPaths() {
-  const projects = (await getCollection('projects')).filter((p) => !p.data.draft);
-  return projects.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+  const portfolios = await getCollection('portfolios');
+  return portfolios.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
 }
 
 const { entry } = Astro.props;
@@ -17,7 +17,7 @@ const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month:
 <BaseLayout title={`${entry.data.title} — Your Name`} description={entry.data.summary}>
   <article class="item">
     <header class="item-head">
-      <p class="eyebrow">Project · {fmt(entry.data.date)}</p>
+      <p class="eyebrow">Portfolio · {fmt(entry.data.date)}</p>
       <h1>{entry.data.title}</h1>
       {entry.data.summary && <p class="lede">{entry.data.summary}</p>}
     </header>

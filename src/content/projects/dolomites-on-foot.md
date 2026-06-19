@@ -1,9 +1,13 @@
 ---
 title: The Dolomites, on foot and on film
 summary: Eight days, two bodies, a pannier of Portra. Notes on light, weight and what survives the journey home.
-cover: ../../assets/photos/proj-dolomites.jpg
-location: Italy
 date: 2026-06-10
+order: 1
+images:
+  - src: ../../assets/photos/proj-dolomites.jpg
+    alt: Ridge line at altitude
+  - src: ../../assets/photos/frame-01.jpg
+    alt: First light on Tre Cime
 ---
 
 There is a version of this trip that lives only in the lab envelope, and a

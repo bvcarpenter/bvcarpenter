@@ -1,0 +1,165 @@
+---
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+
+function byOrderThenDate(
+  a: CollectionEntry<'portfolios' | 'projects'>,
+  b: CollectionEntry<'portfolios' | 'projects'>,
+) {
+  const ao = a.data.order ?? Infinity;
+  const bo = b.data.order ?? Infinity;
+  if (ao !== bo) return ao - bo;
+  return b.data.date.valueOf() - a.data.date.valueOf();
+}
+
+const portfolios = (await getCollection('portfolios')).sort(byOrderThenDate);
+const projects = (await getCollection('projects'))
+  .filter((p) => !p.data.draft)
+  .sort(byOrderThenDate);
+
+const here = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const isActive = (href: string) => here === href.replace(/\/+$/, '');
+---
+
+<aside class="sidebar">
+  <header class="head">
+    <a class="brand" href="/">Your Name</a>
+    <p class="tagline">Photographs &amp; field notes</p>
+  </header>
+
+  <nav class="nav">
+    <section class="group">
+      <h2 class="group-label">Portfolios</h2>
+      <ul>
+        {
+          portfolios.map((p) => (
+            <li>
+              <a
+                href={`/portfolios/${p.id}`}
+                class:list={['link', { active: isActive(`/portfolios/${p.id}`) }]}
+              >
+                {p.data.title}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="group">
+      <h2 class="group-label">Projects</h2>
+      <ul>
+        {
+          projects.map((p) => (
+            <li>
+              <a
+                href={`/projects/${p.id}`}
+                class:list={['link', { active: isActive(`/projects/${p.id}`) }]}
+              >
+                {p.data.title}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </nav>
+
+  <footer class="foot">
+    <a href="/about" class:list={['link', { active: isActive('/about') }]}>About</a>
+  </footer>
+</aside>
+
+<style>
+  .sidebar {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2.2rem;
+    padding: clamp(1.5rem, 1rem + 1.5vw, 2.4rem);
+    border-right: 1px solid var(--line);
+  }
+
+  .brand {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+    color: var(--ink);
+  }
+  .brand:hover {
+    color: var(--ink);
+  }
+  .tagline {
+    margin: 0.4rem 0 0;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 1.8rem;
+    flex: 1;
+  }
+  .group-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+    margin: 0 0 0.7rem;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .link {
+    display: block;
+    padding: 0.28rem 0;
+    font-size: 0.96rem;
+    color: var(--muted);
+    border: 0;
+    transition: color 0.15s ease;
+  }
+  .link:hover {
+    color: var(--ink);
+  }
+  .link.active {
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .link.active::before {
+    content: '';
+    display: inline-block;
+    width: 0.55rem;
+    height: 1px;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+    background: var(--accent);
+  }
+
+  .foot {
+    font-size: 0.9rem;
+  }
+
+  /* On narrow screens the sidebar becomes a normal top block that scrolls away. */
+  @media (max-width: 760px) {
+    .sidebar {
+      position: static;
+      height: auto;
+      border-right: 0;
+      border-bottom: 1px solid var(--line);
+      gap: 1.4rem;
+    }
+  }
+</style>

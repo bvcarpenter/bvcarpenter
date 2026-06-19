@@ -1,0 +1,163 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Gallery from '../components/Gallery.astro';
+import FilmEdge from '../components/FilmEdge.astro';
+
+const photos = (await getCollection('photos')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+const lead = photos.find((p) => p.data.featured) ?? photos[0];
+const selection = photos.filter((p) => p.id !== lead?.id).slice(0, 6);
+
+const projects = (await getCollection('projects'))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+
+const dateFmt = (d: Date) =>
+  d.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+---
+
+<BaseLayout>
+  <section class="wrap intro">
+    <p class="eyebrow">Photographs &amp; Field Notes</p>
+    <h1>
+      A working register of frames worth keeping, and the notes that go with
+      them.
+    </h1>
+  </section>
+
+  {
+    lead && (
+      <section class="wrap lead">
+        <figure data-reveal>
+          <Image
+            src={lead.data.image}
+            alt={lead.data.title}
+            widths={[720, 1080, 1600, 2000]}
+            sizes="(min-width: 1240px) 1180px, 94vw"
+            loading="eager"
+          />
+          <figcaption>
+            <FilmEdge
+              frame={1}
+              camera={lead.data.camera}
+              lens={lead.data.lens}
+              film={lead.data.film}
+              shutter={lead.data.shutter}
+              aperture={lead.data.aperture}
+              iso={lead.data.iso}
+            />
+          </figcaption>
+        </figure>
+      </section>
+    )
+  }
+
+  <section class="wrap block">
+    <div class="block-head">
+      <h2>Selected work</h2>
+      <a href="/work" class="more eyebrow">All frames →</a>
+    </div>
+    <Gallery photos={selection} />
+  </section>
+
+  {
+    projects.length > 0 && (
+      <section class="wrap block">
+        <div class="block-head">
+          <h2>Projects</h2>
+          <a href="/projects" class="more eyebrow">
+            All projects →
+          </a>
+        </div>
+        <ul class="proj-list">
+          {projects.map((p) => (
+            <li>
+              <a href={`/projects/${p.id}/`}>
+                <span class="proj-date eyebrow">{dateFmt(p.data.date)}</span>
+                <span class="proj-title">{p.data.title}</span>
+                <span class="proj-sum">{p.data.summary}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .intro {
+    padding-block: clamp(1rem, 0.5rem + 2vw, 3rem) clamp(1.5rem, 1rem + 2vw, 3rem);
+  }
+  .intro h1 {
+    font-size: var(--step-3);
+    max-width: 18ch;
+    margin-top: 0.6rem;
+  }
+  .lead figure {
+    margin: 0;
+  }
+  .lead img {
+    width: 100%;
+    background: var(--line);
+  }
+  .block {
+    margin-top: clamp(3rem, 2rem + 3vw, 6rem);
+  }
+  .block-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.6rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .block-head h2 {
+    font-size: var(--step-2);
+  }
+  .more:hover {
+    color: var(--ink);
+  }
+  .proj-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .proj-list li + li {
+    border-top: 1px solid var(--line);
+  }
+  .proj-list a {
+    display: grid;
+    grid-template-columns: 8rem 1fr;
+    gap: 0.3rem 2rem;
+    padding: 1.4rem 0;
+    align-items: baseline;
+  }
+  .proj-title {
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+  }
+  .proj-sum {
+    grid-column: 2;
+    color: var(--muted);
+    max-width: 60ch;
+  }
+  .proj-date {
+    grid-row: 1;
+  }
+  @media (max-width: 640px) {
+    .proj-list a {
+      grid-template-columns: 1fr;
+      gap: 0.35rem;
+    }
+    .proj-sum,
+    .proj-date {
+      grid-column: 1;
+    }
+  }
+</style>

@@ -1,0 +1,47 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="foot wrap">
+  <div class="foot-row">
+    <p class="eyebrow">© {year} Your Name</p>
+    <nav class="foot-links" aria-label="Footer">
+      <a href="mailto:hello@your-domain.com">Email</a>
+      <a href="https://instagram.com/" rel="me">Instagram</a>
+      <a href="/projects">Projects</a>
+    </nav>
+  </div>
+  <p class="colophon eyebrow">
+    Built with Astro · set in Fraunces &amp; the system grotesque
+  </p>
+</footer>
+
+<style>
+  .foot {
+    margin-top: clamp(4rem, 3rem + 4vw, 8rem);
+    padding-block: 2.5rem;
+    border-top: 1px solid var(--line);
+  }
+  .foot-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .foot-links {
+    display: flex;
+    gap: 1.4rem;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .foot-links a:hover {
+    color: var(--ink);
+  }
+  .colophon {
+    margin: 1.2rem 0 0;
+  }
+</style>

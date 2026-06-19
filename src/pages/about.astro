@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="About — Your Name" description="About the photographer.">
+  <section class="wrap about">
+    <p class="eyebrow">Colophon</p>
+    <h1>About</h1>
+    <div class="prose">
+      <p>
+        Replace this with your own note. A few sentences on who you are, what you
+        shoot, and why. Keep it short. The pictures do the talking.
+      </p>
+      <p>
+        This site is a register more than a storefront: a place to keep the
+        frames worth returning to, and to write the notes that surround them.
+      </p>
+      <p>
+        For prints, commissions or just to say hello,
+        <a href="mailto:hello@your-domain.com">get in touch</a>.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .about {
+    padding-block: clamp(1rem, 0.5rem + 2vw, 2.5rem);
+  }
+  .about h1 {
+    font-size: var(--step-3);
+    margin: 0.4rem 0 1.5rem;
+  }
+  .prose a {
+    border-bottom: 1px solid var(--accent);
+  }
+</style>

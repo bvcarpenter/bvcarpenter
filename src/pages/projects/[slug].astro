@@ -1,0 +1,78 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const projects = (await getCollection('projects')).filter((p) => !p.data.draft);
+  return projects.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+
+const dateFmt = (d: Date) =>
+  d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+---
+
+<BaseLayout title={`${entry.data.title} — Your Name`} description={entry.data.summary}>
+  <article>
+    <header class="wrap p-head">
+      <p class="eyebrow">
+        {dateFmt(entry.data.date)}{entry.data.location ? ` · ${entry.data.location}` : ''}
+      </p>
+      <h1>{entry.data.title}</h1>
+      <p class="lede">{entry.data.summary}</p>
+    </header>
+
+    <div class="wrap cover">
+      <Image
+        src={entry.data.cover}
+        alt={entry.data.title}
+        widths={[720, 1080, 1600, 2000]}
+        sizes="(min-width: 1240px) 1180px, 94vw"
+        loading="eager"
+      />
+    </div>
+
+    <div class="wrap body prose">
+      <Content />
+    </div>
+
+    <div class="wrap back">
+      <a href="/projects" class="eyebrow">← All projects</a>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .p-head {
+    padding-block: clamp(1rem, 0.5rem + 2vw, 2.5rem) 1.5rem;
+    max-width: 70ch;
+  }
+  .p-head h1 {
+    font-size: var(--step-3);
+    margin: 0.5rem 0;
+  }
+  .lede {
+    font-size: var(--step-1);
+    color: var(--muted);
+    max-width: 54ch;
+  }
+  .cover img {
+    width: 100%;
+    background: var(--line);
+  }
+  .body {
+    margin-top: clamp(2rem, 1.5rem + 2vw, 3.5rem);
+  }
+  .back {
+    margin-top: 3rem;
+  }
+  .back a:hover {
+    color: var(--accent);
+  }
+</style>

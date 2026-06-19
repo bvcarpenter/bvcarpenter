@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Assets-only Worker: no code, just serve the static site that `npm run build`
+  // writes to ./dist. This is what lets the existing Cloudflare Workers Builds
+  // pipeline deploy a pure-static Astro site. Astro itself ignores this file
+  // (the @astrojs/cloudflare adapter is not installed), so `npm run build` is
+  // unaffected.
+  "name": "bvcarpenter",
+  "compatibility_date": "2026-04-15",
+  "assets": {
+    "directory": "./dist"
+  }
+}

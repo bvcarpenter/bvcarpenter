@@ -2,8 +2,10 @@
 
 A hand-built Astro theme for a personal photography site. No page builder, no
 theme engine to fight. Every layout and component is plain code you own and can
-change. Static output, so it deploys to Cloudflare Pages as flat HTML with no
-adapter or Worker.
+change. The public site is fully prerendered to static HTML; a built-in CMS
+(**Keystatic**) adds a small Cloudflare Worker for the `/keystatic` admin and its
+GitHub sign-in, so you can edit photos and projects from a browser and every save
+lands as a commit on this repo.
 
 ## The design, in one paragraph
 
@@ -22,21 +24,25 @@ All of it is a starting point. It is meant to be retuned.
 
 ```bash
 npm install
-npm run dev      # local at http://localhost:4321
-npm run build    # static output to ./dist
-npm run preview  # serve the built site
+npm run dev      # site at http://localhost:4321, CMS at /keystatic
+npm run build    # static pages -> dist/client, CMS worker -> dist/server
+npm run preview  # serve the built output
 ```
 
 Node 22 (see `.nvmrc`).
 
 ## How content works
 
-Two collections, defined in `src/content.config.ts`.
+Two collections, defined in `src/content.config.ts`: **photos** and
+**projects**. Each entry is a [Markdoc](https://markdoc.dev) file (`.mdoc`) —
+frontmatter plus an optional body. The easiest way to add or edit entries is the
+[CMS](#editing-content--the-cms-keystatic); the file format below is what it
+writes, and you can always hand-edit the same files.
 
 ### Add a photo
 
-Create a markdown file in `src/content/photos/`, drop the image in
-`src/assets/photos/`, and reference it relative to the markdown file:
+Create a `.mdoc` file in `src/content/photos/`, drop the image in
+`src/assets/photos/`, and reference it relative to that file:
 
 ```md
 ---
@@ -62,9 +68,9 @@ kB per size.
 
 ### Add a project
 
-A markdown file in `src/content/projects/`. Frontmatter holds the cover and
-summary, the markdown body is the piece itself. Set `draft: true` to keep one
-out of the build.
+A `.mdoc` file in `src/content/projects/`. Frontmatter holds the cover and
+summary, the body is the piece itself (standard markdown works — it is valid
+Markdoc). Set `draft: true` to keep one out of the build.
 
 ```md
 ---
@@ -77,6 +83,45 @@ date: 2026-06-10
 
 Body text in markdown. Drop images inline and they get optimized too.
 ```
+
+## Editing content — the CMS (Keystatic)
+
+The site ships with [Keystatic](https://keystatic.com) wired up as a forms-based
+editor at **`/keystatic`**. It runs in **GitHub mode**: you sign in with GitHub,
+edit photos and projects in a UI, and pressing *Save* writes a commit to this
+repo — which triggers a rebuild and deploy. No separate database or server to
+run; the repo is the content store.
+
+It edits the *same* files described above — `src/content/photos/*.mdoc` and
+`src/content/projects/*.mdoc`. Uploaded images go into `src/assets/photos/` with
+a path relative to the entry, so CMS-added photos get the same build-time
+optimization as the originals. The field definitions live in
+`keystatic.config.ts` and mirror `src/content.config.ts`; if you add a field to
+one, add it to the other.
+
+### One-time setup: the GitHub App
+
+Keystatic authenticates through a GitHub App that you create once via its wizard:
+
+1. Run `npm run dev` and open <http://localhost:4321/keystatic>.
+2. Follow the **“Set up Keystatic”** prompt. It opens a pre-filled GitHub App
+   creation page — create the app and install it on the `bvcarpenter/bvcarpenter`
+   repo.
+3. GitHub redirects back and Keystatic shows four values. Copy `.env.example` to
+   `.env` and paste them in (`KEYSTATIC_GITHUB_CLIENT_ID`,
+   `KEYSTATIC_GITHUB_CLIENT_SECRET`, `KEYSTATIC_SECRET`,
+   `PUBLIC_KEYSTATIC_GITHUB_APP_SLUG`). `.env` is gitignored.
+4. Restart `npm run dev`. `/keystatic` now signs you in and saves to GitHub.
+
+For the **deployed** admin, set those same four variables on the Cloudflare
+Worker (see below) and add your production URL to the GitHub App’s callback URLs
+(`https://your-domain.com/api/keystatic/github/oauth/callback`). One app can list
+both the localhost and production callbacks.
+
+> Prefer to skip all the app setup and just edit on your own machine? Change
+> `storage` in `keystatic.config.ts` to `{ kind: 'local' }`. The admin then reads
+> and writes your local files directly with no GitHub App and no env vars — but
+> it only works in `npm run dev`, not on the deployed site.
 
 ## Pointing images somewhere else later
 
@@ -102,33 +147,43 @@ locked in:
 - **Domain:** set `site` in `astro.config.mjs` to your real URL before launch so
   canonical tags and the sitemap are correct.
 
-## Deploying to Cloudflare Pages — kept separate from work
+## Deploying to Cloudflare — kept separate from work
 
-You asked to keep this fully separate from the Camera West infrastructure. Two
-levels of separation, strongest first:
+Because the CMS needs server-side routes, the build now targets a **Cloudflare
+Worker** (via `@astrojs/cloudflare`) rather than a plain Pages upload. The Worker
+serves the static pages straight from assets and only runs code for `/keystatic`
+and `/api/keystatic/*`. `npm run build` produces both halves: `dist/client/`
+(static HTML + images) and `dist/server/` (the Worker).
 
-**Recommended — a separate Cloudflare account.** Cloudflare lets one login hold
-multiple accounts. From the dashboard account switcher, create a new account
-(e.g. "Personal"). This gives you isolated billing, isolated API tokens, and a
-dashboard where a personal deploy can never sit next to CW production Workers,
-Pages or DNS zones. Then: **Workers & Pages → Create → Pages → Connect to Git**,
-authorize the same GitHub login, pick the new repo, and set:
+You asked to keep this fully separate from the Camera West infrastructure.
+**Recommended: a separate Cloudflare account.** Cloudflare lets one login hold
+multiple accounts; from the account switcher, create a new one (e.g. "Personal")
+for isolated billing, tokens and dashboard, so a personal deploy never sits next
+to CW production Workers or DNS zones. The repo is also a **new, separate GitHub
+repository** under the same login — nothing here touches the Camera West repos.
 
-- Framework preset: **Astro**
-- Build command: `npm run build`
-- Build output directory: `dist`
-- Environment variable: `NODE_VERSION = 22`
+Connect and configure (**Workers & Pages → Create → Workers → Connect to Git**,
+pick this repo):
+
+- **Build command:** `npm run build`
+- **Deploy/config:** uses the adapter-generated `dist/server/wrangler.json`
+- **`NODE_VERSION = 22`** build variable
+
+Then set the runtime pieces the Worker needs (these are account-specific, which
+is why they are not committed — see `wrangler.example.jsonc` for the shape):
+
+- **Compatibility flag `nodejs_compat`** and a recent `compatibility_date` —
+  Keystatic's GitHub auth uses Node APIs.
+- **KV namespace bound as `SESSION`** — create one and add its binding (Astro's
+  session store on Cloudflare).
+- **Encrypted variables** — the same four Keystatic values from your `.env`
+  (`KEYSTATIC_GITHUB_CLIENT_ID`, `KEYSTATIC_GITHUB_CLIENT_SECRET`,
+  `KEYSTATIC_SECRET`, `PUBLIC_KEYSTATIC_GITHUB_APP_SLUG`).
 
 Put the personal custom domain's DNS in this same personal account so everything
-personal lives in one place.
+personal lives in one place, and add that domain to the GitHub App's callback
+URLs (see the CMS section).
 
-**Simpler — a separate Pages project in your existing account.** Isolated per
-project (its own build, domain and settings) but shares billing and dashboard
-with Camera West. Fine if you would rather not manage two logins, but it does
-not isolate access the way a separate account does.
-
-Either way: the repo is a **new, separate GitHub repository** under the same
-GitHub login. Nothing here touches the Camera West repos.
-
-Every push to the connected branch triggers a build and deploy. Static output
-means cold loads are just HTML and cached images.
+Every push to the connected branch triggers a build and deploy — and so does
+every *Save* in the CMS, since those are commits. Static pages mean cold loads
+are just HTML and cached images; only the admin touches the Worker.

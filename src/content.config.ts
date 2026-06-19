@@ -2,12 +2,13 @@ import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
 // PHOTOS — individual frames for the portfolio grid.
-// Each frame is a small markdown file in src/content/photos. The frontmatter is
+// Each frame is a small Markdoc file in src/content/photos. The frontmatter is
 // the negative's edge data: camera, lens, film stock and exposure. The optional
-// markdown body becomes a caption. Drop the image in src/assets/photos and
-// reference it relative to the markdown file so Astro can optimize it.
+// body becomes a caption. Drop the image in src/assets/photos and reference it
+// relative to the file so Astro can optimize it. These files are managed through
+// the Keystatic CMS (/keystatic), which writes .mdoc; hand-editing still works.
 const photos = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/photos' }),
+  loader: glob({ pattern: '**/*.{md,mdoc}', base: './src/content/photos' }),
   schema: ({ image }) =>
     z.object({
       title: z.string(),
@@ -24,10 +25,10 @@ const photos = defineCollection({
     }),
 });
 
-// PROJECTS — written pieces and photo essays. Cover image plus a markdown body
+// PROJECTS — written pieces and photo essays. Cover image plus a Markdoc body
 // you can interleave with more frames. This is the "share my projects" surface.
 const projects = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/projects' }),
+  loader: glob({ pattern: '**/*.{md,mdoc}', base: './src/content/projects' }),
   schema: ({ image }) =>
     z.object({
       title: z.string(),

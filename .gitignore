@@ -1,6 +1,7 @@
 # build output
 dist/
 .astro/
+.wrangler/
 
 # deps
 node_modules/
@@ -8,5 +9,6 @@ node_modules/
 # env + os
 .env
 .env.production
+.dev.vars
 .DS_Store
 npm-debug.log*

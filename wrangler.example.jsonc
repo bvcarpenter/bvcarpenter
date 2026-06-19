@@ -1,0 +1,29 @@
+// REFERENCE ONLY — this file is deliberately named `wrangler.example.jsonc` so
+// the Astro build does NOT read it. Do not rename it to `wrangler.jsonc` in this
+// repo: the @astrojs/cloudflare adapter routes SSR through a workerd runner when a
+// real wrangler config is present, which changes (and can break) `npm run build`.
+//
+// Its purpose is to document the Worker settings the deployed site needs. Apply
+// them in the Cloudflare dashboard (Workers Builds → your Worker → Settings), or
+// adapt them in your own deploy tooling. The adapter writes the *effective*
+// config to dist/server/wrangler.json at build time; these are the bits you must
+// supply yourself because they are account-specific.
+{
+  "name": "field-register",
+
+  // Keystatic's GitHub-mode auth uses Node APIs at runtime, so the Worker needs
+  // the Node.js compatibility flag.
+  "compatibility_date": "2026-04-15",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Astro's session store on Cloudflare is a KV namespace bound as SESSION.
+  // Create a KV namespace in your account and paste its id here / in the
+  // dashboard binding.
+  "kv_namespaces": [{ "binding": "SESSION", "id": "<your-kv-namespace-id>" }]
+
+  // Secrets are NOT listed here — set them as encrypted variables on the Worker:
+  //   KEYSTATIC_GITHUB_CLIENT_ID
+  //   KEYSTATIC_GITHUB_CLIENT_SECRET
+  //   KEYSTATIC_SECRET
+  //   PUBLIC_KEYSTATIC_GITHUB_APP_SLUG
+}

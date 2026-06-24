@@ -1,9 +1,11 @@
 ---
 title: A small darkroom in a small bathroom
 summary: Building a home development setup that fits in a closet and a weekend. What it costs, what it saves, and why the wait is the best part.
-cover: ../../assets/photos/proj-developing.jpg
-location: Greenville
 date: 2026-02-14
+order: 2
+images:
+  - src: ../../assets/photos/proj-developing.jpg
+    alt: Prints drying in the dark
 ---
 
 The chemistry is easier than people tell you. The discipline is harder.

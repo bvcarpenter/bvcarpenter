@@ -1,43 +1,51 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
-// PHOTOS — individual frames for the portfolio grid.
-// Each frame is a small Markdoc file in src/content/photos. The frontmatter is
-// the negative's edge data: camera, lens, film stock and exposure. The optional
-// body becomes a caption. Drop the image in src/assets/photos and reference it
-// relative to the file so Astro can optimize it. These files are managed through
-// the Keystatic CMS (/keystatic), which writes .mdoc; hand-editing still works.
-const photos = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdoc}', base: './src/content/photos' }),
+// Each entry across both collections is a plain Markdown file: frontmatter for
+// the metadata + carousel images, and the Markdown body for the scrollable text
+// shown beneath the carousel. Drop images in src/assets/photos and reference
+// them relative to the file so Astro optimizes them at build time.
+
+// PORTFOLIOS — image-led galleries. The carousel is the point; text is optional.
+const portfolios = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/portfolios' }),
   schema: ({ image }) =>
     z.object({
       title: z.string(),
-      image: image(),
-      camera: z.string().optional(),
-      lens: z.string().optional(),
-      film: z.string().optional(),
-      shutter: z.string().optional(),
-      aperture: z.string().optional(),
-      iso: z.string().optional(),
-      location: z.string().optional(),
+      summary: z.string().optional(),
       date: z.coerce.date(),
-      featured: z.boolean().default(false),
+      // Lower numbers sort first in the sidebar; falls back to date.
+      order: z.number().optional(),
+      images: z
+        .array(
+          z.object({
+            src: image(),
+            alt: z.string().optional(),
+          }),
+        )
+        .default([]),
     }),
 });
 
-// PROJECTS — written pieces and photo essays. Cover image plus a Markdoc body
-// you can interleave with more frames. This is the "share my projects" surface.
+// PROJECTS — text-led pieces. Optional carousel up top, then the writing.
 const projects = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdoc}', base: './src/content/projects' }),
+  loader: glob({ pattern: '**/*.md', base: './src/content/projects' }),
   schema: ({ image }) =>
     z.object({
       title: z.string(),
-      summary: z.string(),
-      cover: image(),
-      location: z.string().optional(),
+      summary: z.string().optional(),
       date: z.coerce.date(),
+      order: z.number().optional(),
       draft: z.boolean().default(false),
+      images: z
+        .array(
+          z.object({
+            src: image(),
+            alt: z.string().optional(),
+          }),
+        )
+        .default([]),
     }),
 });
 
-export const collections = { photos, projects };
+export const collections = { portfolios, projects };

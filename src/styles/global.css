@@ -1,48 +1,40 @@
 /* ============================================================
-   FIELD REGISTER — design tokens
-   Direction: a quiet darkroom. Paper-white ground, warm graphite
-   ink, images carry the page. The one indulgence is the film-edge
-   metadata strip (see FilmEdge.astro), set in monospace like the
-   rebate printing along a strip of 35mm. A single Leica-red dot is
-   the only color on the page, and it is never used for anything
-   larger than a marker.
+   Minimal photography theme — design tokens.
+   A quiet two-column shell: a slim nav rail on the left, the work
+   on the right. Near-monochrome, generous whitespace, one accent
+   used only as a marker. Light and dark via prefers-color-scheme.
    ============================================================ */
 
 :root {
-  /* color — monochrome ground, one accent */
-  --paper: #fbfaf8;
-  --ink: #16140f;
-  --muted: #6b6862;
-  --line: #e4e1da;
-  --raise: #ffffff;
-  --accent: #b61f23; /* used only as a dot / marker, never a fill */
+  --paper: #fbfaf8; /* page ground */
+  --ink: #17150f; /* text */
+  --muted: #6b6862; /* secondary text */
+  --line: #e6e3dc; /* hairlines / borders */
+  --sink: #f1efea; /* recessed surfaces (carousel letterbox) */
+  --accent: #b61f23; /* marker only — never a large fill */
 
-  /* type */
   --font-display: 'Fraunces Variable', Fraunces, Georgia, 'Times New Roman', serif;
   --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
 
-  /* scale */
+  /* type scale */
   --step--1: clamp(0.78rem, 0.76rem + 0.1vw, 0.84rem);
-  --step-0: clamp(0.95rem, 0.92rem + 0.15vw, 1.05rem);
-  --step-1: clamp(1.2rem, 1.1rem + 0.5vw, 1.45rem);
-  --step-2: clamp(1.6rem, 1.4rem + 1vw, 2.2rem);
-  --step-3: clamp(2.4rem, 1.9rem + 2.4vw, 4rem);
-  --step-4: clamp(3rem, 2.2rem + 4vw, 6rem);
+  --step-0: clamp(0.95rem, 0.92rem + 0.15vw, 1.04rem);
+  --step-1: clamp(1.18rem, 1.08rem + 0.5vw, 1.4rem);
+  --step-2: clamp(1.5rem, 1.3rem + 1vw, 2rem);
+  --step-3: clamp(2.1rem, 1.7rem + 2vw, 3.2rem);
 
-  /* space + measure */
-  --gutter: clamp(1.25rem, 0.8rem + 2.2vw, 3rem);
+  /* layout */
+  --sidebar-w: clamp(13rem, 18vw, 17rem);
   --measure: 64ch;
-  --maxw: 1240px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --paper: #121110;
     --ink: #eceae4;
-    --muted: #908c84;
+    --muted: #8f8b83;
     --line: #2a2825;
-    --raise: #1a1916;
+    --sink: #0c0b0a;
     --accent: #d83a3e;
   }
 }
@@ -75,7 +67,7 @@ h2,
 h3 {
   font-family: var(--font-display);
   font-weight: 400;
-  line-height: 1.05;
+  line-height: 1.08;
   letter-spacing: -0.01em;
   margin: 0;
 }
@@ -91,46 +83,64 @@ img {
   height: auto;
 }
 
-/* layout helpers */
-.wrap {
-  width: 100%;
-  max-width: var(--maxw);
-  margin-inline: auto;
-  padding-inline: var(--gutter);
-}
-
-.prose {
-  max-width: var(--measure);
-}
-
-.prose p {
-  margin: 0 0 1.2em;
-}
-
-.prose h2 {
-  font-size: var(--step-2);
-  margin: 2em 0 0.5em;
-}
-
-.prose img {
-  margin: 2rem 0;
-}
-
-/* the eyebrow / utility label, set like a caption on a print */
+/* The mono-ish utility label above a title. */
 .eyebrow {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--step--1);
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
-/* focus + access floor */
+/* Shared detail-page scaffold (portfolios, projects, about). */
+.item {
+  max-width: 1080px;
+}
+.item-head {
+  margin-bottom: clamp(1.4rem, 1rem + 2vw, 2.4rem);
+}
+.item-head h1 {
+  font-size: var(--step-3);
+  margin: 0.35rem 0 0;
+}
+.lede {
+  font-size: var(--step-1);
+  color: var(--muted);
+  max-width: 52ch;
+  margin: 0.6rem 0 0;
+}
+.item-body {
+  margin-top: clamp(1.6rem, 1.2rem + 2vw, 2.6rem);
+}
+
+/* Long-form text. */
+.prose {
+  max-width: var(--measure);
+}
+.prose > :first-child {
+  margin-top: 0;
+}
+.prose p {
+  margin: 0 0 1.2em;
+}
+.prose h2 {
+  font-size: var(--step-2);
+  margin: 1.8em 0 0.5em;
+}
+.prose a {
+  border-bottom: 1px solid var(--accent);
+}
+.prose img {
+  margin: 2rem 0;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+}
+
+/* Access floor. */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
-
 .skip-link {
   position: absolute;
   left: -9999px;
